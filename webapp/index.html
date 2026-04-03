@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #1a7a4a;
+  --green-light: #e8f5ee;
+  --green-mid: #c8ebd8;
+  --blue: #1a5fa8;
+  --blue-light: #e8f0fb;
+  --amber: #b85c00;
+  --amber-light: #fef3e8;
+  --red: #c0392b;
+  --red-light: #fdecea;
+  --gray: #f7f8fa;
+  --border: #e8eaed;
+  --text: #1a1a2e;
+  --muted: #6b7280;
+  --white: #ffffff;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--gray); color: var(--text); min-height: 100vh; }
+.app { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 240px; background: var(--white); border-right: 1px solid var(--border); padding: 28px 0; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+.logo { padding: 0 24px 28px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.logo-mark { width: 36px; height: 36px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+.logo-mark svg { width: 20px; height: 20px; }
+.logo h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+.logo p { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--muted); border-left: 3px solid transparent; transition: all 0.15s; }
+.nav-item:hover { background: var(--gray); color: var(--text); }
+.nav-item.active { color: var(--green); border-left-color: var(--green); background: var(--green-light); }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.patient-select { margin: 16px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: var(--gray); cursor: pointer; }
+.sidebar-label { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase; padding: 8px 24px 4px; }
+
+/* Main */
+.main { margin-left: 240px; flex: 1; padding: 32px; }
+.page { display: none; }
+.page.active { display: block; }
+.page-header { margin-bottom: 28px; }
+.page-header h2 { font-size: 24px; font-weight: 600; color: var(--text); }
+.page-header p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+/* Cards */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); }
+.card-title { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+
+/* Metric cards */
+.metric { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+.metric-val { font-size: 28px; font-weight: 600; color: var(--text); line-height: 1; }
+.metric-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.metric-delta { font-size: 11px; margin-top: 4px; font-weight: 500; }
+
+/* Forms */
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; display: block; }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--white); transition: border-color 0.15s; }
+.form-input:focus { outline: none; border-color: var(--green); }
+.form-input::placeholder { color: #bbb; }
+select.form-input { cursor: pointer; }
+.btn { padding: 10px 20px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-primary { background: var(--green); color: #fff; }
+.btn-primary:hover { background: #156038; }
+.btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--gray); }
+.btn-danger { background: var(--red-light); color: var(--red); border: 1px solid #f5c6c2; }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+.btn-row { display: flex; gap: 10px; margin-top: 20px; }
+
+/* Badges */
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-blue { background: var(--blue-light); color: var(--blue); }
+.badge-amber { background: var(--amber-light); color: var(--amber); }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-gray { background: var(--gray); color: var(--muted); }
+
+/* Risk bar */
+.risk-bar-bg { height: 8px; background: var(--gray); border-radius: 4px; overflow: hidden; margin: 10px 0 6px; }
+.risk-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.shap-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.shap-label { font-size: 12px; color: var(--muted); width: 200px; flex-shrink: 0; }
+.shap-bg { flex: 1; height: 5px; background: var(--gray); border-radius: 3px; overflow: hidden; }
+.shap-fill { height: 100%; border-radius: 3px; }
+
+/* Table */
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th { text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.table td { padding: 12px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--gray); }
+
+/* Dose card */
+.dose-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+.dose-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.dose-info { flex: 1; }
+.dose-name { font-size: 14px; font-weight: 500; }
+.dose-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.dose-actions { display: flex; gap: 8px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 28px; right: 28px; background: #1a1a2e; color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 500; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; z-index: 999; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* Loading */
+.loading { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+.spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Empty state */
+.empty { text-align: center; padding: 48px 24px; color: var(--muted); }
+.empty-icon { font-size: 36px; margin-bottom: 12px; }
+.empty h3 { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.empty p { font-size: 13px; line-height: 1.6; }
+
+.section-gap { margin-bottom: 24px; }
+.inline-form { background: var(--gray); border-radius: 12px; padding: 20px; margin-top: 16px; border: 1px solid var(--border); }
+.api-url { font-family: 'DM Mono', monospace; font-size: 11px; background: var(--gray); padding: 4px 8px; border-radius: 6px; color: var(--muted); margin-bottom: 16px; display: inline-block; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 16px; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20" fill="none"><rect x="8" y="2" width="4" height="16" rx="2" fill="white"/><rect x="2" y="8" width="16" height="4" rx="2" fill="white"/></svg>
+    </div>
+    <h1>MedTrack</h1>
+    <p>Adherence Tracker</p>
+  </div>
+
+  <div class="sidebar-label">Patient</div>
+  <select class="patient-select" id="patient-select" onchange="onPatientChange()">
+    <option value="">Select patient...</option>
+  </select>
+
+  <div class="sidebar-label">Navigation</div>
+  <div class="nav-item active" onclick="showPage('dashboard')">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="2" fill="currentColor"/><rect x="10" y="1" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/><rect x="1" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/><rect x="10" y="10" width="7" height="7" rx="2" fill="currentColor"/></svg>
+    Dashboard
+  </div>
+  <div class="nav-item" onclick="showPage('register')">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="4" fill="currentColor" opacity=".4"/><path d="M2 16c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 3h4M14 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Register Patient
+  </div>
+  <div class="nav-item" onclick="showPage('medications')">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none"><rect x="2" y="6" width="14" height="10" rx="2" fill="currentColor" opacity=".3"/><rect x="6" y="2" width="6" height="6" rx="1" fill="currentColor"/><path d="M6 11h6M9 9v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Medications
+  </div>
+  <div class="nav-item" onclick="showPage('doses')">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none"><path d="M9 1v16M1 9h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".4"/><circle cx="9" cy="9" r="4" fill="currentColor"/></svg>
+    Log Doses
+  </div>
+  <div class="nav-item" onclick="showPage('risk')">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none"><path d="M9 2L2 15h14L9 2z" fill="currentColor" opacity=".3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 8v3M9 13h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Risk Score
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="main">
+
+<!-- API URL config -->
+<div style="margin-bottom:20px;display:flex;align-items:center;gap:10px">
+  <span style="font-size:13px;color:var(--muted)">API:</span>
+  <input id="api-url" class="form-input" style="width:280px;padding:7px 12px;font-size:13px;font-family:'DM Mono',monospace" value="http://localhost:8000/api" placeholder="http://localhost:8000/api">
+  <button class="btn btn-secondary btn-sm" onclick="testConnection()">Test connection</button>
+  <span id="conn-status" style="font-size:12px;color:var(--muted)"></span>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <h2>Dashboard</h2>
+    <p id="dashboard-subtitle">Select a patient to view their adherence summary</p>
+  </div>
+
+  <div class="grid-4" id="metrics-row">
+    <div class="metric"><div class="metric-val" id="m-adh7">—</div><div class="metric-label">7-day adherence</div></div>
+    <div class="metric"><div class="metric-val" id="m-adh14">—</div><div class="metric-label">14-day adherence</div></div>
+    <div class="metric"><div class="metric-val" id="m-adh30">—</div><div class="metric-label">30-day adherence</div></div>
+    <div class="metric"><div class="metric-val" id="m-risk">—</div><div class="metric-label">Dropout risk</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Recent dose logs</div>
+      <div id="recent-logs"><div class="empty"><div class="empty-icon">💊</div><h3>No logs yet</h3><p>Select a patient and log their doses</p></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Patient info</div>
+      <div id="patient-info"><div class="empty"><div class="empty-icon">👤</div><h3>No patient selected</h3><p>Select a patient from the sidebar</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER PATIENT -->
+<div class="page" id="page-register">
+  <div class="page-header">
+    <h2>Register patient</h2>
+    <p>Add a new patient to the system</p>
+  </div>
+  <div class="card" style="max-width:560px">
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Full name *</label>
+        <input class="form-input" id="reg-name" placeholder="e.g. Rahul Sharma">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone number *</label>
+        <input class="form-input" id="reg-phone" placeholder="e.g. 9876543210">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Age</label>
+        <input class="form-input" id="reg-age" type="number" placeholder="e.g. 45">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Language</label>
+        <select class="form-input" id="reg-lang">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="mr">Marathi</option>
+          <option value="ta">Tamil</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email (optional)</label>
+      <input class="form-input" id="reg-email" placeholder="e.g. rahul@email.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Caregiver phone (optional)</label>
+      <input class="form-input" id="reg-caregiver" placeholder="e.g. 9876543211">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="registerPatient()">Register patient</button>
+      <button class="btn btn-secondary" onclick="clearRegForm()">Clear</button>
+    </div>
+    <div id="reg-result" style="margin-top:14px;font-size:13px"></div>
+  </div>
+
+  <div class="card" style="max-width:560px;margin-top:20px">
+    <div class="card-title">All registered patients</div>
+    <div id="patients-list"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+  </div>
+</div>
+
+<!-- MEDICATIONS -->
+<div class="page" id="page-medications">
+  <div class="page-header">
+    <h2>Medications</h2>
+    <p>Add medications for the selected patient</p>
+  </div>
+
+  <div class="card" style="max-width:580px;margin-bottom:20px">
+    <div class="card-title">Add medication</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Medication name *</label>
+        <input class="form-input" id="med-name" placeholder="e.g. Metformin">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dosage *</label>
+        <input class="form-input" id="med-dosage" placeholder="e.g. 500mg">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Doses per day *</label>
+        <select class="form-input" id="med-freq">
+          <option value="1">Once daily</option>
+          <option value="2" selected>Twice daily</option>
+          <option value="3">Three times daily</option>
+          <option value="4">Four times daily</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Instructions</label>
+        <input class="form-input" id="med-instructions" placeholder="e.g. with food">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Schedule times (comma separated)</label>
+      <input class="form-input" id="med-times" placeholder="e.g. 08:00, 20:00">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addMedication()">Add medication</button>
+    </div>
+    <div id="med-result" style="margin-top:14px;font-size:13px"></div>
+  </div>
+
+  <div class="card" style="max-width:580px">
+    <div class="card-title">Current medications</div>
+    <div id="med-list"><div class="empty"><div class="empty-icon">💊</div><h3>No medications</h3><p>Select a patient and add their medications above</p></div></div>
+  </div>
+</div>
+
+<!-- LOG DOSES -->
+<div class="page" id="page-doses">
+  <div class="page-header">
+    <h2>Log doses</h2>
+    <p>Record whether a dose was taken or missed</p>
+  </div>
+
+  <div class="card" style="max-width:560px;margin-bottom:20px">
+    <div class="card-title">Log a dose</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Medication *</label>
+        <select class="form-input" id="dose-med-select">
+          <option value="">Select medication...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Scheduled time *</label>
+        <input class="form-input" id="dose-time" type="datetime-local">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Was the dose taken?</label>
+      <div style="display:flex;gap:10px;margin-top:6px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer">
+          <input type="radio" name="dose-taken" value="true" checked> Yes, taken
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer">
+          <input type="radio" name="dose-taken" value="false"> No, missed
+        </label>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="logDose()">Log dose</button>
+    </div>
+    <div id="dose-result" style="margin-top:14px;font-size:13px"></div>
+  </div>
+
+  <div class="card" style="max-width:560px">
+    <div class="card-title">Recent dose history (last 14 days)</div>
+    <div id="dose-history"><div class="empty"><div class="empty-icon">📋</div><h3>No history</h3><p>Select a patient to see their dose logs</p></div></div>
+  </div>
+</div>
+
+<!-- RISK SCORE -->
+<div class="page" id="page-risk">
+  <div class="page-header">
+    <h2>Risk score</h2>
+    <p>ML-powered dropout prediction with SHAP explanation</p>
+  </div>
+
+  <div class="grid-2" style="max-width:900px">
+    <div class="card">
+      <div class="card-title">Run prediction</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">Runs the XGBoost model on this patient's dose history and returns a dropout risk score with SHAP explanation.</p>
+      <button class="btn btn-primary" onclick="runPrediction()">Run ML prediction</button>
+      <div id="risk-loading" style="display:none;margin-top:16px" class="loading"><div class="spinner"></div>Running model...</div>
+
+      <div id="risk-result" style="display:none;margin-top:20px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px">
+          <span style="font-size:40px;font-weight:600" id="risk-score-display">—</span>
+          <span style="font-size:14px;color:var(--muted)">/100</span>
+          <span class="badge" id="risk-level-badge">—</span>
+        </div>
+        <div class="risk-bar-bg"><div class="risk-bar-fill" id="risk-bar-fill" style="width:0%"></div></div>
+        <p style="font-size:12px;color:var(--muted)" id="risk-message"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SHAP explanation</div>
+      <div id="shap-display"><div class="empty" style="padding:24px"><div class="empty-icon">🔍</div><h3>No prediction yet</h3><p>Run the model to see why the score was assigned</p></div></div>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:900px;margin-top:20px">
+    <div class="card-title">Intervention log</div>
+    <div id="intervention-log"><div class="empty"><div class="empty-icon">🔔</div><h3>No interventions</h3><p>Interventions are triggered automatically when risk is medium or high</p></div></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let currentPatientId = null;
+let currentPatientName = '';
+let currentMedications = [];
+
+function getAPI() {
+  return document.getElementById('api-url').value.trim().replace(/\/$/, '');
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+
+  if (name === 'register') loadPatientsList();
+  if (name === 'medications' && currentPatientId) loadMedications();
+  if (name === 'doses' && currentPatientId) { loadDoseHistory(); loadMedSelectOptions(); }
+  if (name === 'dashboard' && currentPatientId) loadDashboard();
+  if (name === 'risk' && currentPatientId) loadInterventions();
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type === 'error' ? '#c0392b' : '#1a1a2e';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Connection test ────────────────────────────────────────────────────────
+async function testConnection() {
+  const el = document.getElementById('conn-status');
+  el.textContent = 'Testing...';
+  try {
+    const r = await fetch(getAPI().replace('/api','') + '/health');
+    const d = await r.json();
+    el.textContent = '✓ Connected';
+    el.style.color = 'var(--green)';
+    toast('Connected to MedTrack API!');
+    loadPatientsList();
+    loadPatientsDropdown();
+  } catch {
+    el.textContent = '✗ Cannot connect';
+    el.style.color = 'var(--red)';
+    toast('Cannot connect. Is the server running?', 'error');
+  }
+}
+
+// ── Patient dropdown ───────────────────────────────────────────────────────
+async function loadPatientsDropdown() {
+  try {
+    const r = await fetch(getAPI() + '/patients/all');
+    const patients = await r.json();
+    const sel = document.getElementById('patient-select');
+    sel.innerHTML = '<option value="">Select patient...</option>';
+    patients.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id;
+      o.textContent = p.name + ' (#' + p.id + ')';
+      sel.appendChild(o);
+    });
+  } catch {}
+}
+
+function onPatientChange() {
+  const sel = document.getElementById('patient-select');
+  currentPatientId = sel.value || null;
+  currentPatientName = sel.options[sel.selectedIndex]?.text || '';
+  if (currentPatientId) {
+    document.getElementById('dashboard-subtitle').textContent = 'Showing data for ' + currentPatientName;
+    loadDashboard();
+    loadMedications();
+    loadMedSelectOptions();
+  }
+}
+
+// ── Register patient ───────────────────────────────────────────────────────
+async function registerPatient() {
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  if (!name || !phone) { toast('Name and phone are required', 'error'); return; }
+
+  const payload = {
+    name,
+    phone,
+    age: parseInt(document.getElementById('reg-age').value) || null,
+    language: document.getElementById('reg-lang').value,
+    email: document.getElementById('reg-email').value || null,
+    caregiver_phone: document.getElementById('reg-caregiver').value || null,
+  };
+
+  try {
+    const r = await fetch(getAPI() + '/patients/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Registration failed');
+    document.getElementById('reg-result').innerHTML = '<span style="color:var(--green);font-weight:500">✓ Patient registered! ID: ' + d.id + '</span>';
+    toast('Patient registered successfully!');
+    clearRegForm();
+    loadPatientsList();
+    loadPatientsDropdown();
+  } catch(e) {
+    document.getElementById('reg-result').innerHTML = '<span style="color:var(--red)">✗ ' + e.message + '</span>';
+    toast(e.message, 'error');
+  }
+}
+
+function clearRegForm() {
+  ['reg-name','reg-phone','reg-age','reg-email','reg-caregiver'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('reg-result').innerHTML = '';
+}
+
+async function loadPatientsList() {
+  const el = document.getElementById('patients-list');
+  try {
+    const r = await fetch(getAPI() + '/patients/all');
+    const patients = await r.json();
+    if (!patients.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div><h3>No patients yet</h3><p>Register your first patient above</p></div>'; return; }
+    el.innerHTML = '<table class="table"><thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Age</th><th>Meds</th></tr></thead><tbody>' +
+      patients.map(p => `<tr><td style="font-family:'DM Mono',monospace;color:var(--muted)">#${p.id}</td><td style="font-weight:500">${p.name}</td><td>${p.phone}</td><td>${p.age || '—'}</td><td>${p.medication_count || 0}</td></tr>`).join('') +
+      '</tbody></table>';
+  } catch {
+    el.innerHTML = '<div style="color:var(--red);font-size:13px">Could not load patients. Check API connection.</div>';
+  }
+}
+
+// ── Medications ────────────────────────────────────────────────────────────
+async function addMedication() {
+  if (!currentPatientId) { toast('Select a patient first', 'error'); return; }
+  const name = document.getElementById('med-name').value.trim();
+  const dosage = document.getElementById('med-dosage').value.trim();
+  const timesRaw = document.getElementById('med-times').value.trim();
+  if (!name || !dosage) { toast('Name and dosage are required', 'error'); return; }
+
+  const schedule_times = timesRaw ? timesRaw.split(',').map(t => t.trim()) : ['08:00'];
+
+  const payload = {
+    patient_id: parseInt(currentPatientId),
+    name, dosage,
+    frequency: parseInt(document.getElementById('med-freq').value),
+    schedule_times,
+    instructions: document.getElementById('med-instructions').value.trim(),
+  };
+
+  try {
+    const r = await fetch(getAPI() + '/patients/medication', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Failed');
+    document.getElementById('med-result').innerHTML = '<span style="color:var(--green);font-weight:500">✓ ' + d.message + '</span>';
+    toast('Medication added!');
+    ['med-name','med-dosage','med-times','med-instructions'].forEach(id => document.getElementById(id).value = '');
+    loadMedications();
+    loadMedSelectOptions();
+  } catch(e) {
+    document.getElementById('med-result').innerHTML = '<span style="color:var(--red)">✗ ' + e.message + '</span>';
+    toast(e.message, 'error');
+  }
+}
+
+async function loadMedications() {
+  if (!currentPatientId) return;
+  const el = document.getElementById('med-list');
+  try {
+    const r = await fetch(getAPI() + '/patients/' + currentPatientId);
+    const d = await r.json();
+    currentMedications = d.medications || [];
+    if (!currentMedications.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">💊</div><h3>No medications</h3><p>Add medications using the form above</p></div>';
+      return;
+    }
+    el.innerHTML = currentMedications.map(m => `
+      <div class="dose-card">
+        <div class="dose-dot" style="background:var(--green)"></div>
+        <div class="dose-info">
+          <div class="dose-name">${m.name} ${m.dosage}</div>
+          <div class="dose-time">${m.frequency}x daily · ${(m.schedule_times||[]).join(', ')} ${m.instructions ? '· ' + m.instructions : ''}</div>
+        </div>
+        <span class="badge badge-green">Active</span>
+      </div>`).join('');
+  } catch {
+    el.innerHTML = '<div style="color:var(--red);font-size:13px">Could not load medications.</div>';
+  }
+}
+
+async function loadMedSelectOptions() {
+  if (!currentPatientId) return;
+  try {
+    const r = await fetch(getAPI() + '/patients/' + currentPatientId);
+    const d = await r.json();
+    const sel = document.getElementById('dose-med-select');
+    sel.innerHTML = '<option value="">Select medication...</option>';
+    (d.medications || []).forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.id;
+      o.textContent = m.name + ' ' + m.dosage;
+      sel.appendChild(o);
+    });
+  } catch {}
+}
+
+// ── Log doses ──────────────────────────────────────────────────────────────
+async function logDose() {
+  if (!currentPatientId) { toast('Select a patient first', 'error'); return; }
+  const medId = document.getElementById('dose-med-select').value;
+  const timeVal = document.getElementById('dose-time').value;
+  if (!medId) { toast('Select a medication', 'error'); return; }
+  if (!timeVal) { toast('Select scheduled time', 'error'); return; }
+
+  const wasTaken = document.querySelector('input[name="dose-taken"]:checked').value === 'true';
+
+  const payload = {
+    patient_id: parseInt(currentPatientId),
+    medication_id: parseInt(medId),
+    scheduled_time: new Date(timeVal).toISOString(),
+    was_taken: wasTaken,
+  };
+
+  try {
+    const r = await fetch(getAPI() + '/doses/log', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Failed');
+    document.getElementById('dose-result').innerHTML = '<span style="color:var(--green);font-weight:500">✓ Dose logged! ' + (wasTaken ? 'Marked as taken.' : 'Marked as missed.') + '</span>';
+    toast(wasTaken ? 'Dose logged as taken!' : 'Dose logged as missed.');
+    loadDoseHistory();
+    loadDashboard();
+  } catch(e) {
+    document.getElementById('dose-result').innerHTML = '<span style="color:var(--red)">✗ ' + e.message + '</span>';
+    toast(e.message, 'error');
+  }
+}
+
+async function loadDoseHistory() {
+  if (!currentPatientId) return;
+  const el = document.getElementById('dose-history');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+  try {
+    const r = await fetch(getAPI() + '/doses/patient/' + currentPatientId + '?days=14');
+    const logs = await r.json();
+    if (!logs.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><h3>No logs yet</h3><p>Log doses using the form above</p></div>'; return; }
+    el.innerHTML = '<table class="table"><thead><tr><th>Medication</th><th>Scheduled</th><th>Status</th><th>Photo</th></tr></thead><tbody>' +
+      logs.slice(0,20).map(l => {
+        const dt = new Date(l.scheduled_time).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        const status = l.was_taken
+          ? '<span class="badge badge-green">Taken</span>'
+          : '<span class="badge badge-red">Missed</span>';
+        const photo = l.photo_verified ? '<span class="badge badge-blue">Verified</span>' : '—';
+        return `<tr><td style="font-weight:500">Med #${l.medication_id}</td><td style="color:var(--muted);font-size:12px">${dt}</td><td>${status}</td><td>${photo}</td></tr>`;
+      }).join('') + '</tbody></table>';
+  } catch {
+    el.innerHTML = '<div style="color:var(--red);font-size:13px">Could not load history.</div>';
+  }
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  if (!currentPatientId) return;
+  try {
+    const [adhR, patR] = await Promise.all([
+      fetch(getAPI() + '/doses/adherence/' + currentPatientId),
+      fetch(getAPI() + '/patients/' + currentPatientId),
+    ]);
+    const adh = await adhR.json();
+    const pat = await patR.json();
+
+    document.getElementById('m-adh7').textContent = Math.round(adh.adherence_7d * 100) + '%';
+    document.getElementById('m-adh14').textContent = Math.round(adh.adherence_14d * 100) + '%';
+    document.getElementById('m-adh30').textContent = Math.round(adh.adherence_30d * 100) + '%';
+
+    document.getElementById('patient-info').innerHTML = `
+      <table class="table">
+        <tr><td style="color:var(--muted)">Name</td><td style="font-weight:500">${pat.name}</td></tr>
+        <tr><td style="color:var(--muted)">Phone</td><td>${pat.phone}</td></tr>
+        <tr><td style="color:var(--muted)">Age</td><td>${pat.age || '—'}</td></tr>
+        <tr><td style="color:var(--muted)">Language</td><td>${pat.language}</td></tr>
+        <tr><td style="color:var(--muted)">Medications</td><td>${pat.medications?.length || 0} active</td></tr>
+        <tr><td style="color:var(--muted)">Caregiver</td><td>${pat.caregiver_phone || '—'}</td></tr>
+      </table>`;
+
+    loadRecentLogs();
+  } catch {}
+}
+
+async function loadRecentLogs() {
+  if (!currentPatientId) return;
+  const el = document.getElementById('recent-logs');
+  try {
+    const r = await fetch(getAPI() + '/doses/patient/' + currentPatientId + '?days=7');
+    const logs = await r.json();
+    if (!logs.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">💊</div><h3>No logs yet</h3></div>'; return; }
+    const taken = logs.filter(l => l.was_taken).length;
+    el.innerHTML = `<div style="margin-bottom:12px;font-size:13px;color:var(--muted)">${taken} of ${logs.length} doses taken in last 7 days</div>` +
+      logs.slice(0,8).map(l => {
+        const dt = new Date(l.scheduled_time).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        const col = l.was_taken ? 'var(--green)' : 'var(--red)';
+        const label = l.was_taken ? 'Taken' : 'Missed';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
+          <div style="flex:1;font-size:13px">Med #${l.medication_id}</div>
+          <div style="font-size:12px;color:var(--muted)">${dt}</div>
+          <span class="badge ${l.was_taken ? 'badge-green' : 'badge-red'}">${label}</span>
+        </div>`;
+      }).join('');
+  } catch {}
+}
+
+// ── Risk score ─────────────────────────────────────────────────────────────
+async function runPrediction() {
+  if (!currentPatientId) { toast('Select a patient first', 'error'); return; }
+  document.getElementById('risk-loading').style.display = 'block';
+  document.getElementById('risk-result').style.display = 'none';
+  document.getElementById('shap-display').innerHTML = '<div class="loading"><div class="spinner"></div>Computing SHAP values...</div>';
+
+  try {
+    const r = await fetch(getAPI() + '/predictions/run/' + currentPatientId, { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Prediction failed');
+
+    document.getElementById('risk-loading').style.display = 'none';
+    document.getElementById('risk-result').style.display = 'block';
+
+    const score = Math.round(d.score * 100);
+    const level = d.risk_level;
+    const colors = { low: 'var(--green)', medium: 'var(--amber)', high: 'var(--red)' };
+    const barColors = { low: '#1a7a4a', medium: '#EF9F27', high: '#E24B4A' };
+    const badgeClass = { low: 'badge-green', medium: 'badge-amber', high: 'badge-red' };
+    const messages = {
+      low: 'Patient is adhering well. No intervention needed.',
+      medium: 'Some risk factors detected. Caregiver alert has been triggered.',
+      high: 'High dropout risk. Pharmacist callback has been queued.'
+    };
+
+    document.getElementById('risk-score-display').textContent = score;
+    document.getElementById('risk-score-display').style.color = colors[level];
+    document.getElementById('risk-bar-fill').style.width = score + '%';
+    document.getElementById('risk-bar-fill').style.background = barColors[level];
+    document.getElementById('risk-level-badge').textContent = level.charAt(0).toUpperCase() + level.slice(1) + ' risk';
+    document.getElementById('risk-level-badge').className = 'badge ' + badgeClass[level];
+    document.getElementById('risk-message').textContent = messages[level];
+    document.getElementById('m-risk').textContent = score + '/100';
+    document.getElementById('m-risk').style.color = colors[level];
+
+    // SHAP
+    const shap = d.shap_values || {};
+    const sorted = Object.entries(shap).sort((a,b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0,6);
+    const maxShap = Math.max(...sorted.map(([,v]) => Math.abs(v)), 0.01);
+    const labels = {
+      adherence_7d: '7-day adherence rate', adherence_14d: '14-day adherence',
+      missed_dose_count_7d: 'Missed doses (7 days)', missed_dose_count_14d: 'Missed doses (14 days)',
+      evening_miss_rate_14d: 'Evening dose miss rate', morning_miss_rate_14d: 'Morning dose miss rate',
+      session_frequency_delta: 'App engagement trend', notification_open_rate_7d: 'Notification open rate',
+      streak_current: 'Current streak', days_since_last_miss: 'Days since last miss',
+      time_deviation_avg_7d: 'Timing consistency', days_since_refill: 'Days since refill',
+    };
+
+    document.getElementById('shap-display').innerHTML = sorted.map(([k,v]) => {
+      const isGood = v < 0;
+      const pct = Math.round((Math.abs(v) / maxShap) * 100);
+      const barCol = isGood ? '#1a7a4a' : '#E24B4A';
+      return `<div class="shap-row">
+        <div class="shap-label">${labels[k] || k.replace(/_/g,' ')}</div>
+        <div class="shap-bg"><div class="shap-fill" style="width:${pct}%;background:${barCol}"></div></div>
+        <span style="font-size:11px;color:var(--muted);min-width:48px;text-align:right">${isGood ? 'Helping' : 'Hurting'}</span>
+      </div>`;
+    }).join('');
+
+    loadInterventions();
+    toast('Prediction complete! Risk: ' + level);
+  } catch(e) {
+    document.getElementById('risk-loading').style.display = 'none';
+    toast(e.message, 'error');
+  }
+}
+
+async function loadInterventions() {
+  if (!currentPatientId) return;
+  const el = document.getElementById('intervention-log');
+  try {
+    const r = await fetch(getAPI() + '/notifications/patient/' + currentPatientId);
+    const items = await r.json();
+    if (!items.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🔔</div><h3>No interventions yet</h3><p>Run the ML prediction to trigger interventions</p></div>'; return; }
+    const typeColors = { push_notification: 'badge-green', caregiver_alert: 'badge-amber', pharmacist_callback: 'badge-red' };
+    const typeLabels = { push_notification: 'Push', caregiver_alert: 'Caregiver alert', pharmacist_callback: 'Pharmacist callback' };
+    el.innerHTML = '<table class="table"><thead><tr><th>Type</th><th>Message</th><th>Score</th><th>Time</th></tr></thead><tbody>' +
+      items.map(i => {
+        const dt = new Date(i.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        return `<tr>
+          <td><span class="badge ${typeColors[i.type]||'badge-gray'}">${typeLabels[i.type]||i.type}</span></td>
+          <td style="font-size:12px;color:var(--muted);max-width:300px">${i.message}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px">${i.trigger_score||'—'}</td>
+          <td style="font-size:12px;color:var(--muted)">${dt}</td>
+        </tr>`;
+      }).join('') + '</tbody></table>';
+  } catch {}
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.getElementById('dose-time').value = new Date().toISOString().slice(0,16);
+testConnection();
+</script>
+</body>
+</html>
