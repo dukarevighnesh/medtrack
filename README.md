@@ -59,17 +59,21 @@ Patient → API → Feature Engineering → ML Model → SHAP → Intervention
 
 <hr>
 
-<h2> Setup</h2>
+<h2>⚡ How to Run</h2>
 
+<p><b>Step 1: Start Backend</b></p>
 <pre>
-git clone https://github.com/YOURNAME/medtrack.git
-cd medtrack
 cd backend
-python -m venv venv
-venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 </pre>
+
+<p><b>Step 2: Open Frontend</b></p>
+<pre>
+Open webapp/index.html in browser
+</pre>
+
+<p><b>Note:</b> Backend must be running before using the dashboard.</p>
 
 <hr>
 
@@ -78,6 +82,7 @@ uvicorn app.main:app --reload
 <li>Targets India's chronic disease burden</li>
 <li>Works in low-connectivity environments</li>
 <li>Reduces caregiver workload</li>
+<li>Empowers patients with explainable insights</li> 
 </ul>
 
 <hr>
@@ -87,4 +92,4 @@ uvicorn app.main:app --reload
 
 <hr>
 
-<p align="center">⭐ Star this repo if you like it</p>
+<p align="center">_________________________________________________</p>
